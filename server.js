@@ -1,3 +1,4 @@
+
 const express = require("express");
 const axios = require("axios");
 const path = require("path");
@@ -22,10 +23,13 @@ app.get("/", (req, res) => {
 });
 
 // =======================
-// Nodemailer Setup
+// Nodemailer Setup (FIXED FOR RENDER IPv6 ISSUE)
 // =======================
 const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true, // Use SSL
+    family: 4,    // 👈 FORCES IPv4 (Fixes ENETUNREACH error on Render)
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
@@ -125,21 +129,27 @@ app.get("/api/leetcode", async (req, res) => {
             return res.status(404).json({ message: "LeetCode user not found" });
         }
 
-        let totalSolved = 0;
-        user.submitStats.acSubmissionNum.forEach(item => {
-            if (item.difficulty === "All") totalSolved = item.count;
-        });
+        const stats = user.submitStats.acSubmissionNum;
+        const totalSolved = stats.find(s => s.difficulty === "All")?.count || 0;
+        const easySolved = stats.find(s => s.difficulty === "Easy")?.count || 0;
+        const mediumSolved = stats.find(s => s.difficulty === "Medium")?.count || 0;
+        const hardSolved = stats.find(s => s.difficulty === "Hard")?.count || 0;
+        const rating = contest ? Math.round(contest.rating) : "N/A";
 
         res.json({
             totalSolved,
-            contestRating: contest ? Math.round(contest.rating) : "Unrated"
+            easySolved,
+            mediumSolved,
+            hardSolved,
+            rating
         });
-    } catch (err) {
-        res.status(500).json({ message: "Unable to fetch LeetCode data" });
+    } catch (error) {
+        console.error("❌ LeetCode API Error:", error.message);
+        res.status(500).json({ message: "Failed to fetch LeetCode stats" });
     }
 });
 
 // Start Server
 app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
 });
