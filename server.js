@@ -22,18 +22,23 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "miniProject_html.html"));
 });
 
+
 // =======================
-// Nodemailer Setup (FIXED FOR RENDER IPv6 ISSUE)
+// Nodemailer Setup (FIXED FOR RENDER PORT & TIMEOUT ERRORS)
 // =======================
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 465,
-    secure: true, // Use SSL
-    family: 4,    // 👈 FORCES IPv4 (Fixes ENETUNREACH error on Render)
+    port: 587,
+    secure: false, // Must be false for port 587 (uses STARTTLS)
+    family: 4,     // Forces IPv4
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
-    }
+    },
+    tls: {
+        rejectUnauthorized: false // Prevents cloud firewall TLS handshaking blocks
+    },
+    connectionTimeout: 10000 // 10 second timeout threshold
 });
 
 transporter.verify((error, success) => {
@@ -43,7 +48,6 @@ transporter.verify((error, success) => {
         console.log("📧 Email server is ready to send messages.");
     }
 });
-
 // =======================
 // Contact Form Route (POST)
 // =======================
