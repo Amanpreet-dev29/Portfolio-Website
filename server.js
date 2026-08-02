@@ -1,9 +1,12 @@
+// Force Node.js to prioritize IPv4 globally before any network calls happen
+const dns = require("dns");
+dns.setDefaultResultOrder("ipv4first");
+
 const express = require("express");
 const axios = require("axios");
 const path = require("path");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
-const dns = require("dns");
 require("dotenv").config();
 
 const app = express();
@@ -23,10 +26,10 @@ app.get("/", (req, res) => {
 });
 
 // =======================
-// Nodemailer Setup (STRICT IPv4 FORCE FOR RENDER)
+// Nodemailer Setup (HARDCODED IPv4 FOR RENDER)
 // =======================
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
+    host: "142.250.152.108", // Direct IPv4 for smtp.gmail.com (Bypasses Render IPv6 resolution)
     port: 587,
     secure: false, // TLS via STARTTLS
     auth: {
@@ -34,11 +37,8 @@ const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASS
     },
     tls: {
-        rejectUnauthorized: false
-    },
-    // Strictly forces Node.js to resolve IPv4 addresses ONLY
-    lookup: (hostname, options, callback) => {
-        return dns.lookup(hostname, { family: 4 }, callback);
+        rejectUnauthorized: false,
+        servername: "smtp.gmail.com" // Required so TLS matches Gmail's SSL certificate
     }
 });
 
@@ -159,6 +159,5 @@ app.get("/api/leetcode", async (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
-
       
    
