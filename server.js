@@ -1,9 +1,9 @@
-
 const express = require("express");
 const axios = require("axios");
 const path = require("path");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
+const dns = require("dns");
 require("dotenv").config();
 
 const app = express();
@@ -22,23 +22,24 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "miniProject_html.html"));
 });
 
-
 // =======================
-// Nodemailer Setup (FIXED FOR RENDER PORT & TIMEOUT ERRORS)
+// Nodemailer Setup (STRICT IPv4 FORCE FOR RENDER)
 // =======================
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
-    secure: false, // Must be false for port 587 (uses STARTTLS)
-    family: 4,     // Forces IPv4
+    secure: false, // TLS via STARTTLS
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
     tls: {
-        rejectUnauthorized: false // Prevents cloud firewall TLS handshaking blocks
+        rejectUnauthorized: false
     },
-    connectionTimeout: 10000 // 10 second timeout threshold
+    // Strictly forces Node.js to resolve IPv4 addresses ONLY
+    lookup: (hostname, options, callback) => {
+        return dns.lookup(hostname, { family: 4 }, callback);
+    }
 });
 
 transporter.verify((error, success) => {
@@ -48,6 +49,7 @@ transporter.verify((error, success) => {
         console.log("📧 Email server is ready to send messages.");
     }
 });
+
 // =======================
 // Contact Form Route (POST)
 // =======================
@@ -157,3 +159,6 @@ app.get("/api/leetcode", async (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
+
+      
+   
