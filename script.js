@@ -3,7 +3,7 @@
 // CONFIGURATION
 // Replace this with your actual Render backend URL!
 // ================================
-const BACKEND_URL = "https://your-render-service-name.onrender.com";
+const BACKEND_URL = "https://aman-devspace-backend.onrender.com";
 
 
 // ================================
