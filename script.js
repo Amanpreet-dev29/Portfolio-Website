@@ -1,3 +1,11 @@
+
+// ================================
+// CONFIGURATION
+// Replace this with your actual Render backend URL!
+// ================================
+const BACKEND_URL = "https://your-render-service-name.onrender.com";
+
+
 // ================================
 // 1. Typing Animation
 // ================================
@@ -50,7 +58,8 @@ type();
 // ================================
 async function loadLeetCodeStats() {
     try {
-        const response = await fetch("/api/leetcode");
+        // Updated to use the live Render backend URL
+        const response = await fetch(`${BACKEND_URL}/api/leetcode`);
 
         if (!response.ok) {
             throw new Error("Failed to fetch LeetCode stats");
@@ -172,8 +181,8 @@ document.addEventListener("DOMContentLoaded", () => {
             };
 
             try {
-                // Using relative API URL for seamless node execution
-                const response = await fetch('/api/contact', {
+                // Updated to point directly to Render backend endpoint
+                const response = await fetch(`${BACKEND_URL}/api/contact`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -191,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
-                alert('⚠️ Could not reach server. Is node running at http://localhost:3000?');
+                alert('⚠️ Could not reach server. Please try again later.');
             } finally {
                 submitBtn.innerText = originalBtnText;
                 submitBtn.disabled = false;
